@@ -50,7 +50,7 @@ int main(int, char**){
 			puntoOpcional();
 		}
 		else {
-			cout << "Opcion invalida" << endl;
+			cout << "Opción invalida" << endl;
 			break;
 		}
 		destroyAllWindows();
