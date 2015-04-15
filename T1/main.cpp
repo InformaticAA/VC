@@ -149,7 +149,7 @@ void aplicarEfecto(int tecla, cv::Mat &img){
 void mostrarMenu(){
 	cout << "Efectos disponibles (Pulsa ESC para salir):" << endl;
 	cout << "  1)Alien: Azul(a), Rojo(r), Verde(v)" << endl;
-	cout << "  2)Contraste: Manual(m [+ -]), Ecualizacion(e)" << endl;
-	cout << "  3)Distorsion: Cojin(c [+ -]), Barril(b [+ -])" << endl;
+	cout << "  2)Contraste: Manual(m [+ -]), Ecualización(e)" << endl;
+	cout << "  3)Distorsión: Cojín(c [+ -]), Barril(b [+ -])" << endl;
 	cout << "  4)Poster [+ -]" << endl;
 }
