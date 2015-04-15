@@ -50,7 +50,7 @@ int main(int, char**){
 		cin >> opcion;
 		cout << "==========================" << endl;
 		if (opcion == 1){
-			cout << "Manual(1) o automático(2): ";
+			cout << "Manual(1) o Automático(2): ";
 			cin >> opcion;
 
 			if(opcion == 1){
