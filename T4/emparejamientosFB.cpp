@@ -13,29 +13,34 @@ void emparejamientos(Mat &i1, Mat &i2);
 void emparejamientos(Mat &i1, Mat &i2){
 	Mat d1, d2, i_matches;
 	vector< KeyPoint > kp1, kp2;
-	vector< DMatch > matches;
+	vector< vector <DMatch> > matches;
 
+	/* Detectar puntos de interes */
 	SurfFeatureDetector detector(400);
 	detector.detect(i1,kp1);
 	detector.detect(i2,kp2);
 
+	/* Obtiene los descriptores de cada punto de interes */
 	SurfDescriptorExtractor extractor;
 	extractor.compute(i1,kp1,d1);
 	extractor.compute(i2,kp2,d2);
 
-	cout << "Pre BF" << endl;
+	vector < DMatch > filtrados;
 
+	/* Realiza los emparejamientos, con filtro de ratio */
 	BFMatcher matcher(NORM_L2);
-	matcher.match(d1,d2,matches);
+	matcher.knnMatch(d1,d2,matches,2);
+	for(int i = 0; i < matches.size(); i++){
 
-	cout << "Post BF" << endl;
+		/* Aplica el filtro de ratio */
+		if(matches[i][0].distance < 0.6*matches[i][1].distance){
+			filtrados.push_back(matches[i][0]);
+		}
+	}
 
-//	BruteForceMatcher< L2 < float > > matcher;
-//	matcher.add(d2);
-//	matcher.match(d1,d2,matches);
-
+	/* Muestra los emparejamientos */
 	namedWindow("matches",1);
-	drawMatches(i1,kp1,i2,kp2,matches,i_matches);
+	drawMatches(i1,kp1,i2,kp2,filtrados,i_matches);
 	imshow("matches",i_matches);
 	waitKey(0);
 }
