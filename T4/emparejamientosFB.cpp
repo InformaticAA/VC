@@ -11,7 +11,7 @@ using namespace cv;
 void emparejamientos(Mat &i1, Mat &i2);
 
 void emparejamientos(Mat &i1, Mat &i2){
-	Mat d1, d2, i_matches, inliers;
+	Mat d1, d2, i_matches, inliers,result;
 	vector< KeyPoint > kp1, kp2;
 	vector< vector <DMatch> > matches;
 	vector < DMatch > filtrados, ransac;
@@ -30,7 +30,7 @@ void emparejamientos(Mat &i1, Mat &i2){
 	/* Realiza los emparejamientos, con filtro de ratio */
 	BFMatcher matcher(NORM_L2);
 	matcher.knnMatch(d1,d2,matches,2);
-	for(int i = 0; i < matches.size(); i++){
+	for(unsigned int i = 0; i < matches.size(); i++){
 
 		/* Aplica el filtro de ratio */
 		if(matches[i][0].distance < 0.5*matches[i][1].distance){
@@ -38,7 +38,7 @@ void emparejamientos(Mat &i1, Mat &i2){
 		}
 	}
 
-	for(int i = 0; i < filtrados.size(); i++){
+	for(unsigned int i = 0; i < filtrados.size(); i++){
 		obj.push_back(kp1[ filtrados[i].queryIdx ].pt);
 		scene.push_back(kp2[ filtrados[i].trainIdx ].pt);
 	}
@@ -46,22 +46,88 @@ void emparejamientos(Mat &i1, Mat &i2){
 	Mat mask;
 	Mat homography = findHomography(obj,scene,CV_RANSAC,3,mask);
 
-	for(int i = 0; i < filtrados.size(); i++){
+	for(unsigned int i = 0; i < filtrados.size(); i++){
 		if((int)mask.at<uchar>(i,0) == 1){
 			ransac.push_back(filtrados[i]);
 		}
 	}
+
+	vector <Point2f> corners;
+
+	corners.push_back(Point2f(0,0));
+	corners.push_back(Point2f(0,i1.rows));
+	corners.push_back(Point2f(i1.cols,0));
+	corners.push_back(Point2f(i1.rows,i1.cols));
+
+	vector < Point2f > scene_corners;
+	perspectiveTransform(corners, scene_corners, homography);
+
+	int maxCols(0),maxRows(0),minCols(0),minRows(0);
+
+	for(unsigned int i = 0; i < scene_corners.size(); i++){
+		cout << "X: " << corners.at(i).x << ",X': " << scene_corners.at(i).x << " - ";
+		cout << "Y: " << corners.at(i).y << ",Y': " << scene_corners.at(i).y << endl;
+		if(maxRows < scene_corners.at(i).y){
+			maxRows = scene_corners.at(i).y;
+		}
+		if(minRows > scene_corners.at(i).y){
+			minRows = scene_corners.at(i).y;
+		}
+		if(maxCols < scene_corners.at(i).x){
+			maxCols = scene_corners.at(i).x;
+		}
+		if(minCols > scene_corners.at(i).x){
+			minCols = scene_corners.at(i).x;
+		}
+	}
+
+	for(unsigned int i = 0; i < scene_corners.size(); i++){
+		scene_corners.at(i).x = scene_corners.at(i).x - minCols;
+		scene_corners.at(i).y = scene_corners.at(i).y - minRows;
+	}
+
+	Mat newHomography = getPerspectiveTransform(corners,scene_corners);
+
+	cout << "===================" <<endl;
+	cout << "Min rows : " << minRows << endl;
+	cout << "Min cols : " << minCols <<endl;
+
+	cout << "Max rows : " << maxRows << endl;
+	cout << "Max cols : " << maxCols << endl;
+
 
 	/* Muestra los emparejamientos */
 	namedWindow("filtrados",1);
 	drawMatches(i1,kp1,i2,kp2,filtrados,i_matches);
 	imshow("filtrados",i_matches);
 
-
 	/* Muestra los inliers */
 	namedWindow("inliers",1);
 	drawMatches(i1,kp1,i2,kp2,ransac,inliers);
 	imshow("inliers",inliers);
 	waitKey(0);
+
+	cout << "LLega" <<endl;
+	warpPerspective(i1,result,newHomography,Size(maxCols-minCols+i2.cols,maxRows-minRows));
+//	warpPerspective(i2,result,Mat::eye(Size(3,3),CV_64F),Size(i1.cols+i2.cols,i1.rows),INTER_LINEAR,BORDER_CONSTANT);
+
+	cout << "No llega" <<endl;
+	namedWindow("Warp",1);
+	cout << "Jelou" << endl;
+//	imshow("Warp", i1);
+//	waitKey(0);
+//	imshow("Warp", result);
+//	waitKey(0);
+	Mat half(result,Rect(-minCols,-minRows,i2.cols,i2.rows));
+	cout << "half" << endl;
+
+	i2.copyTo(half);
+	cout << "copy" << endl;
+
+	imshow("Warp", result);
+	cout << "show" << endl;
+
+	waitKey(0);
+
 }
 
