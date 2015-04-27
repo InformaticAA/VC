@@ -57,12 +57,12 @@ void emparejamientos(Mat &i1, Mat &i2){
 	corners.push_back(Point2f(0,0));
 	corners.push_back(Point2f(0,i1.rows));
 	corners.push_back(Point2f(i1.cols,0));
-	corners.push_back(Point2f(i1.rows,i1.cols));
+	corners.push_back(Point2f(i1.cols,i1.rows));
 
 	vector < Point2f > scene_corners;
 	perspectiveTransform(corners, scene_corners, homography);
 
-	int maxCols(0),maxRows(0),minCols(0),minRows(0);
+	float maxCols(0),maxRows(0),minCols(0),minRows(0);
 
 	for(unsigned int i = 0; i < scene_corners.size(); i++){
 		cout << "X: " << corners.at(i).x << ",X': " << scene_corners.at(i).x << " - ";
@@ -88,12 +88,19 @@ void emparejamientos(Mat &i1, Mat &i2){
 
 	Mat newHomography = getPerspectiveTransform(corners,scene_corners);
 
-	cout << "===================" <<endl;
-	cout << "Min rows : " << minRows << endl;
-	cout << "Min cols : " << minCols <<endl;
-
-	cout << "Max rows : " << maxRows << endl;
-	cout << "Max cols : " << maxCols << endl;
+//	vector <Point2f> obj_corners;
+//
+//	obj_corners.push_back(Point2f(-minCols,-minRows));
+//	obj_corners.push_back(Point2f(-minCols,i2.rows-minRows));
+//	obj_corners.push_back(Point2f(i2.cols-minCols,-minRows));
+//	obj_corners.push_back(Point2f(i2.cols-minCols,i2.rows-minRows));
+////
+//	cout << "===================" <<endl;
+//	cout << "Min rows : " << minRows << endl;
+//	cout << "Min cols : " << minCols <<endl;
+//
+//	cout << "Max rows : " << maxRows << endl;
+//	cout << "Max cols : " << maxCols << endl;
 
 
 	/* Muestra los emparejamientos */
@@ -108,7 +115,47 @@ void emparejamientos(Mat &i1, Mat &i2){
 	waitKey(0);
 
 	cout << "LLega" <<endl;
-	warpPerspective(i1,result,newHomography,Size(maxCols-minCols+i2.cols,maxRows-minRows));
+	cout << "I2.rows - minRows: " << i2.rows - minRows << " - " << "MaxRows " << maxRows << endl;
+
+	/* Calcular rectangulo inscrito */
+
+//	cout << "Esquinas" << endl;
+//	cout << "========" << endl;
+//	cout << "Scene_object: P1 = (" << scene_corners[0].x << "," << scene_corners[0].y << ")" << endl;
+//	cout << "Scene_object: P2 = (" << scene_corners[1].x << "," << scene_corners[1].y << ")" << endl;
+//	cout << "Scene_object: P3 = (" << scene_corners[2].x << "," << scene_corners[2].y << ")" << endl;
+//	cout << "Scene_object: P4 = (" << scene_corners[3].x << "," << scene_corners[3].y << ")" << endl;
+//	cout << "Obj_object: P1 = (" << obj_corners[0].x << "," << obj_corners[0].y << ")" << endl;
+//	cout << "Obj_object: P2 = (" << obj_corners[1].x << "," << obj_corners[1].y << ")" << endl;
+//	cout << "Obj_object: P3 = (" << obj_corners[2].x << "," << obj_corners[2].y << ")" << endl;
+//	cout << "Obj_object: P4 = (" << obj_corners[3].x << "," << obj_corners[3].y << ")" << endl;
+//
+//	int x1 = min(max(scene_corners[0].x,scene_corners[1].x),
+//				 max(obj_corners[0].x,obj_corners[1].x));
+//	int y1 = max(max(scene_corners[0].y, scene_corners[2].y),
+//				 max(obj_corners[0].y, obj_corners[2].y));
+//
+//	int x2 = max(min(scene_corners[2].x,scene_corners[3].x),
+//				 min(obj_corners[2].x,obj_corners[3].x));
+//	int y2 = min(min(scene_corners[1].y, scene_corners[3].y),
+//				 min(obj_corners[1].y, obj_corners[3].y));
+
+//	int x1,x2,y1,y2;
+//
+//	if(){
+//		x1 = hor1;
+//		x2 = hor2;
+//		y1 = ver1;
+//		y2 = ver2;
+//	}
+//	else{
+//		x1 = ver1;
+//		x2 = ver2;
+//		y1 = hor1;
+//		y2 = hor2;
+//	}
+
+	warpPerspective(i1,result,newHomography,Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)));
 //	warpPerspective(i2,result,Mat::eye(Size(3,3),CV_64F),Size(i1.cols+i2.cols,i1.rows),INTER_LINEAR,BORDER_CONSTANT);
 
 	cout << "No llega" <<endl;
@@ -122,9 +169,19 @@ void emparejamientos(Mat &i1, Mat &i2){
 	cout << "half" << endl;
 
 	i2.copyTo(half);
+
+//	cout << "x1: " << x1 << endl;
+//	cout << "x2: " << x2 << endl;
+//	cout << "y1: " << y1 << endl;
+//	cout << "y2: " << y2 << endl;
+
+//	Mat final(result,Rect(x1,y1,x2-x1,y2-y1));
+//	Mat final(result,Rect(0,48,553-0,262-48));
 	cout << "copy" << endl;
 
 	imshow("Warp", result);
+
+	imwrite("Imagenes/result2.jpg",result);
 	cout << "show" << endl;
 
 	waitKey(0);
