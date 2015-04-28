@@ -9,13 +9,46 @@
 using namespace std;
 using namespace cv;
 
-extern void emparejamientos(Mat &i1, Mat &i2);
+extern Mat emparejamientos(Mat &i1, Mat &i2);
 
 int main(int, char**){
+	Mat i1,frame;
+	namedWindow("Camara",1);
 
-	Mat i1 = imread("Imagenes/result2.jpg", CV_LOAD_IMAGE_GRAYSCALE);
-	Mat i2 = imread("Imagenes/1.jpg", CV_LOAD_IMAGE_GRAYSCALE);
+	cout << "Pulse INTRO para comenzar a crear el panorama..." << endl;
 
-	emparejamientos(i1,i2);
+	VideoCapture cap(0);
+
+	while(true){
+		cap >> frame;
+		imshow("Camara",frame);
+		if(waitKey(30) == 13){
+			break;
+		}
+	}
+
+	cap >> i1;
+
+	cout << "Grabando..." << endl;
+	cout << "Presione INTRO para capturar imagen y añadirla al panorama" << endl;
+	cout << "Presione ESCAPE para terminar la ejecución y mostrar el panorama" << endl;
+
+	while(true){
+		cap >> frame;
+		imshow("Camara",frame);
+		if(waitKey(30) == 13){
+			cout << "Imagen añadida al panorama" << endl;
+			cap >> frame;
+			i1 = emparejamientos(i1,frame);
+		}
+		if(waitKey(1) == 27){
+			break;
+		}
+	}
+	cout << "Panorama completo guardado en Imagenes/Panorama.jpg" << endl;
+	cout << "Mostrando panorama..." << endl;
+	imwrite("Imagenes/Panorama.jpg",i1);
+	imshow("Panorama", i1);
+	waitKey(0);
 }
 
