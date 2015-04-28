@@ -10,8 +10,11 @@ using namespace std;
 using namespace cv;
 
 Mat panorama(Mat &i1, Mat &i2, int info);
+extern void StartCounter();
+extern double GetCounter();
 
 Mat panorama(Mat &i1, Mat &i2, int info){
+	StartCounter();
 	Mat i1g, i2g, d1, d2, i_matches, inliers, result;
 	cvtColor(i1,i1g,CV_BGR2GRAY);
 	cvtColor(i2,i2g,CV_BGR2GRAY);
@@ -103,7 +106,8 @@ Mat panorama(Mat &i1, Mat &i2, int info){
 
 		warpPerspective(i2,result,euclid,Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)),INTER_LINEAR,BORDER_CONSTANT,0);
 		warpPerspective(i1,result,euclid*homography,Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)),INTER_LINEAR,BORDER_TRANSPARENT,0);
-
+		double time = GetCounter();
+		cout << "Tiempo empleado: " << time << " ms" <<endl;
 		return result;
 	}
 	else{
