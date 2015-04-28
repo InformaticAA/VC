@@ -11,10 +11,9 @@ using namespace cv;
 Mat panorama(Mat &i1, Mat &i2, int info);
 
 Mat panorama(Mat &i1, Mat &i2, int info){
-	Mat i1g, i2g;
+	Mat i1g, i2g, d1, d2, i_matches, inliers, result;
 	cvtColor(i1,i1g,CV_BGR2GRAY);
 	cvtColor(i2,i2g,CV_BGR2GRAY);
-	Mat d1, d2, i_matches, inliers,result;
 	vector< KeyPoint > kp1, kp2;
 	vector< vector <DMatch> > matches;
 	vector < DMatch > filtrados, ransac;
@@ -82,13 +81,16 @@ Mat panorama(Mat &i1, Mat &i2, int info){
 		}
 	}
 
-	for(unsigned int i = 0; i < scene_corners.size(); i++){
-		scene_corners.at(i).x = scene_corners.at(i).x - minCols;
-		scene_corners.at(i).y = scene_corners.at(i).y - minRows;
-	}
+//	for(unsigned int i = 0; i < scene_corners.size(); i++){
+//		scene_corners.at(i).x = scene_corners.at(i).x - minCols;
+//		scene_corners.at(i).y = scene_corners.at(i).y - minRows;
+//	}
+//
+//	Mat newHomography = getPerspectiveTransform(corners,scene_corners);
 
-	Mat newHomography = getPerspectiveTransform(corners,scene_corners);
-
+	Mat euclid = Mat::eye(3,3,homography.type());
+	euclid.at<double>(0,2) = -minCols;
+	euclid.at<double>(1,2) = -minRows;
 
 	if(info == 1){
 		/* Muestra los emparejamientos */
@@ -103,11 +105,48 @@ Mat panorama(Mat &i1, Mat &i2, int info){
 		waitKey(0);
 	}
 
-	warpPerspective(i1,result,newHomography,Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)));
+//	Mat result = Mat(Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)),CV_32F);
+//	Mat result = Mat::zeros(Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)),CV_32F);
+//	warpPerspective(i1,result,newHomography,result.size(),INTER_LINEAR,BORDER_TRANSPARENT,0);
+//	Mat half(result,Rect(-minCols,-minRows,i2.cols,i2.rows));
+//	i2.copyTo(half);
+//	Mat temp;
+//	imshow("Half",half);
+//	waitKey(0);
+//	waitKey(0);
+//	warpPerspective(i2,result,newHomography,Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)),INTER_LINEAR,BORDER_CONSTANT,0);
+//	imshow("Result",result);
+//	waitKey(0);
+//	imshow("Result",result);
+//	waitKey(0);
 
-	Mat half(result,Rect(-minCols,-minRows,i2.cols,i2.rows));
+//
+//	Mat result;
+//	warpPerspective(i1,result,newHomography,Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)),INTER_LINEAR,BORDER_CONSTANT,0);
+//	Mat half(result,Rect(-minCols,-minRows,i2.cols,i2.rows));
 
-	i2.copyTo(half);
+
+	warpPerspective(i2,result,euclid,Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)),INTER_LINEAR,BORDER_CONSTANT,0);
+	warpPerspective(i1,result,euclid*homography,Size(max(i2.cols-minCols,maxCols),max(i2.rows-minRows,maxRows)),INTER_LINEAR,BORDER_TRANSPARENT,0);
+
+//	Mat tmp,alpha,dst;
+//
+//	threshold(i2g,alpha,100,255,THRESH_BINARY);
+//
+//	Mat rgb[3];
+//	split(i2,rgb);
+//
+//	Mat rgba[4]={rgb[0],rgb[1],rgb[2],alpha};
+//	merge(rgba,4,dst);
+//
+//	i2.copyTo(half);
+
+
+//	imshow("half",half);
+//	waitKey(0);
+//	imshow("Temp",temp);
+//	waitKey(0);
+//	temp.copyTo(result);
 
 	return result;
 }

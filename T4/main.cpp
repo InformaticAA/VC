@@ -9,46 +9,118 @@
 using namespace std;
 using namespace cv;
 
-extern Mat emparejamientos(Mat &i1, Mat &i2);
+extern Mat panorama(Mat &i1, Mat &i2, int info);
 
 int main(int, char**){
-	Mat i1,frame;
-	namedWindow("Camara",1);
+	bool continuar = true;
+	int opcion;
+	while(continuar){
+		cout << "==================================" << endl;
+		cout << "Operaciones disponibles:" << endl;
+		cout << "(1) Panorama con imágenes de disco" << endl;
+		cout << "(2) Panorama con imágenes en vivo" << endl;
+		cout << "Elija una opción (1/2): ";
+		cin >> opcion;
+		cout << "==================================" <<endl;
+		if(opcion == 1){
+			String ruta1,ruta2;
+			int info, mas;
+			Mat i1,i2;
+			cout << "Introduzca ruta 1ª imagen: ";
+			cin >> ruta1;
+			i1 = imread(ruta1,CV_LOAD_IMAGE_COLOR);
+			cout << "Introduzca ruta 2ª imagen: ";
+			cin >> ruta2;
+			i2 = imread(ruta2,CV_LOAD_IMAGE_COLOR);
+			cout << "¿Desea mostrar los emparejamientos? (1/2): ";
+			cin >> info;
+			bool moar = true;
+			while(moar){
+				i2 = panorama(i1,i2,info);
+				cout << "¿Desea agregar otra imagen al panorama? (1/2): ";
+				cin >> mas;
+				if(mas == 1){
+					cout << "Introduzca ruta siguiente imagen: ";
+					cin >> ruta2;
+					i1 = imread(ruta2,CV_LOAD_IMAGE_COLOR);
+					destroyAllWindows();
+				}
+				else{
+					moar = false;
+				}
+			}
+			destroyAllWindows();
+			cout << "Panorama completo guardado en Imagenes/Panorama.jpg" << endl;
+			cout << "Mostrando panorama..." << endl;
+			imwrite("Imagenes/Panorama.jpg",i2);
+			imshow("Panorama", i2);
+			waitKey(0);
+			destroyAllWindows();
+			cout << "============================================== " << endl;
+			cout << "¿Desea continuar realizando operaciones? (1/2) ";			cin >> opcion;
+			if(opcion == 2){
+				continuar = false;
+			}
+		}
+		else{
+			Mat i1,frame;
+			namedWindow("Camara",1);
 
-	cout << "Pulse INTRO para comenzar a crear el panorama..." << endl;
+			cout << "Pulse INTRO para comenzar a crear el panorama..." << endl;
 
-	VideoCapture cap(0);
+			VideoCapture cap(0);
 
-	while(true){
-		cap >> frame;
-		imshow("Camara",frame);
-		if(waitKey(30) == 13){
-			break;
+			while(true){
+				cap >> frame;
+				flip(frame,frame,1);
+				imshow("Camara",frame);
+				if(waitKey(30) == 13){
+					break;
+				}
+			}
+
+			cap >> i1;
+			flip(i1,i1,1);
+
+			imwrite("Imagenes/i1.jpg",i1);
+
+
+			cout << "Grabando..." << endl;
+			cout << "Presione INTRO para capturar imagen y agregarla al panorama" << endl;
+			cout << "Presione ESCAPE para terminar la ejecución y mostrar el panorama" << endl;
+			cout << "================================================================" << endl;
+			while(true){
+				cap >> frame;
+				flip(frame,frame,1);
+				imshow("Camara",frame);
+				int wait = waitKey(20);
+				if(wait == 13){
+					cout << "Imagen agregada al panorama" << endl;
+					cap >> frame;
+					flip(frame,frame,1);
+					imwrite("Imagenes/i2.jpg",frame);
+
+					i1 = panorama(frame,i1,2);
+				}
+				if(wait == 27){
+					break;
+				}
+			}
+			destroyAllWindows();
+			cout << "Panorama completo guardado en Imagenes/Panorama.jpg" << endl;
+			cout << "Mostrando panorama..." << endl;
+			imwrite("Imagenes/Panorama.jpg",i1);
+			imshow("Panorama", i1);
+			waitKey(0);
+			destroyAllWindows();
+			cout << "============================================== " << endl;
+			cout << "¿Desea continuar realizando operaciones? (1/2) ";
+			cin >> opcion;
+			if(opcion == 2){
+				continuar = false;
+			}
 		}
 	}
-
-	cap >> i1;
-
-	cout << "Grabando..." << endl;
-	cout << "Presione INTRO para capturar imagen y añadirla al panorama" << endl;
-	cout << "Presione ESCAPE para terminar la ejecución y mostrar el panorama" << endl;
-
-	while(true){
-		cap >> frame;
-		imshow("Camara",frame);
-		if(waitKey(30) == 13){
-			cout << "Imagen añadida al panorama" << endl;
-			cap >> frame;
-			i1 = emparejamientos(i1,frame);
-		}
-		if(waitKey(1) == 27){
-			break;
-		}
-	}
-	cout << "Panorama completo guardado en Imagenes/Panorama.jpg" << endl;
-	cout << "Mostrando panorama..." << endl;
-	imwrite("Imagenes/Panorama.jpg",i1);
-	imshow("Panorama", i1);
-	waitKey(0);
+	cout << "Programa finalizado." << endl;
 }
 
