@@ -36,6 +36,19 @@ Mat panorama(Mat &i1, Mat &i2, int info){
 	/* Realiza los emparejamientos, con filtro de ratio */
 	BFMatcher matcher(NORM_L2);
 	matcher.knnMatch(d1,d2,matches,2);
+
+//	/* Detectar puntos de interes */
+//			FeatureDetector *detector = new ORB();
+//			detector->detect(i1g,kp1);
+//			detector->detect(i2g,kp2);
+//
+//			/* Obtiene los descriptores de cada punto de interes */
+//			DescriptorExtractor *extractor = new ORB();
+//			extractor->compute(i1g,kp1,d1);
+//			extractor->compute(i2g,kp2,d2);
+//			/* Realiza los emparejamientos, con filtro de ratio */
+//			BFMatcher matcher(NORM_HAMMING);
+//			matcher.knnMatch(d1,d2,matches,2);
 	for(unsigned int i = 0; i < matches.size(); i++){
 
 		/* Aplica el filtro de ratio */
